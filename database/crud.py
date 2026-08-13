@@ -1,12 +1,55 @@
-from sqlalchemy.orm import Session
-from database.models import Book
-from database.schemas import BookCreate, BookUpdate
+from sqlalchemy.orm import Session, selectinload
+from database.models import Book, Author
+from database.schemas import AuthorCreate, BookCreate, BookUpdate
 from sqlalchemy import select
 from collections.abc import Sequence
 
 
+def create_author(session: Session, author_data: AuthorCreate) -> Author:
+    author = Author(name=author_data.name)
+    session.add(author)
+    session.commit()
+    session.refresh(author)
+    return author
+
+
+def get_author(session: Session, author_id: int) -> Author | None:
+    return session.get(Author, author_id)
+
+
+def get_author_books(session: Session, author_id: int) -> list[Book]:
+    author = session.get(Author, author_id)
+    if author is None:
+        raise ValueError("Author not found")
+
+    return author.books
+
+
+def get_books_with_authors(session: Session) -> list[Book]:
+    stmt = select(Book).options(selectinload(Book.author))
+    return list(session.scalars(stmt).all())
+
+
+def get_book_by_author(session: Session, author_name: str) -> list[Book]:
+    stmt = (
+        select(Book)
+        .join(Book.author)
+        .where(Author.name == author_name)
+        .options(selectinload(Book.author))
+    )
+    return list(session.scalars(stmt).all())
+
+
 def create_book(session: Session, book_data: BookCreate) -> Book:
-    book = Book(title=book_data.title, author=book_data.author, pages=book_data.pages)
+    author = session.get(Author, book_data.author_id)
+
+    if author is None:
+        raise ValueError("Author not found")
+
+    book = Book(
+        title=book_data.title, author_id=book_data.author_id, pages=book_data.pages
+    )
+
     session.add(book)
     session.commit()
     session.refresh(book)
@@ -23,15 +66,10 @@ def get_book(session: Session, book_id: int) -> Book | None:
     return session.get(Book, book_id)
 
 
-def get_book_by_author(session: Session, author: str) -> Sequence[Book]:
-    stmt = select(Book).where(Book.author == author)
-    return session.scalars(stmt).all()
-
-
 def search_books(
     session: Session,
     search: str | None = None,
-    author: str | None = None,
+    author_name: str | None = None,
     min_pages: int | None = None,
     limit: int = 1,
 ) -> Sequence[Book]:
@@ -41,8 +79,13 @@ def search_books(
     if search is not None:
         stmt = stmt.where(Book.title.contains(search))
 
-    if author is not None:
-        stmt = stmt.where(Book.author.contains(author))
+    if author_name is not None:
+        stmt = (
+            select(Book)
+            .join(Book.author)
+            .where(Author.name == author_name)
+            .options(selectinload(Book.author))
+        )
 
     if min_pages is not None:
         stmt = stmt.where(Book.pages >= min_pages)

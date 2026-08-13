@@ -1,6 +1,7 @@
 from database.db import Base, engine, SessionLocal
-from database.models import Book
+from database.models import Book, author
 from database.crud import (
+    create_author,
     create_book,
     get_books,
     get_book,
@@ -9,25 +10,39 @@ from database.crud import (
     delete_book,
     search_books,
 )
-from database.schemas import BookCreate, BookUpdate, BookRead
+from database.schemas import AuthorCreate, BookCreate, BookUpdate, BookRead
 
 Base.metadata.create_all(engine)
+author_data = AuthorCreate(name="Turbo")
 
 book_data = BookCreate(
     title="LOL",
-    author="Robert Martin",
+    author_id=1,
     pages=464,
 )
 
 book_data_update = BookUpdate(
     title="Giga",
-    author="Rob Bob",
+    author_id=1,
     pages=1001,
 )
 
+#
+# with SessionLocal() as session:
+#     author = create_author(session, author_data)
+#     if author is None:
+#         print("Author not created")
+#     else:
+#         print(f"{author.id}: {author.name}")
+#
+#
 # with SessionLocal() as session:
 #     book = create_book(session, book_data)
-
+#     if book is None:
+#         print("Book not created")
+#     else:
+#         print(f"{book.id}: {book.title} - {book.author.name}")
+#
 
 # with SessionLocal() as session:
 #     books = get_books(session)
