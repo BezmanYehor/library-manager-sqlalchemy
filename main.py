@@ -1,5 +1,5 @@
 from database.db import Base, engine, SessionLocal
-from database.models import Book, author
+from database.models import Book
 from database.crud import (
     create_author,
     create_book,
@@ -9,6 +9,7 @@ from database.crud import (
     update_book,
     delete_book,
     search_books,
+    get_books_with_authors,
 )
 from database.schemas import AuthorCreate, BookCreate, BookUpdate, BookRead
 
