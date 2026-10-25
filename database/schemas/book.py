@@ -3,14 +3,14 @@ from database.schemas import AuthorRead
 
 
 class BookCreate(BaseModel):
-    title: str
-    author_id: int
+    title: str = Field(min_length=1, max_length=100)
+    author_id: int = Field(gt=0)
     pages: int = Field(gt=0)
 
 
 class BookUpdate(BaseModel):
-    title: str | None = None
-    author_id: int | None = None
+    title: str | None = Field(default=None, min_length=1, max_length=100)
+    author_id: int | None = Field(default=None, gt=0)
     pages: int | None = Field(default=None, gt=0)
 
 

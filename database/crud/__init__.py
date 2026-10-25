@@ -5,7 +5,6 @@ from database.crud.book import (
     get_book,
     get_book_by_author,
     get_books,
-    search_books,
     update_book,
     get_books_with_authors,
 )
@@ -19,7 +18,6 @@ __all__ = [
     "get_book",
     "get_book_by_author",
     "get_books",
-    "search_books",
     "update_book",
     "get_books_with_authors",
 ]
